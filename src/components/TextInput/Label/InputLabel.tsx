@@ -39,10 +39,14 @@ const InputLabel = (props: InputLabelProps) => {
     wiggleOffsetX,
     labelScale,
     topPosition,
+<<<<<<< HEAD
     paddingLeft,
     paddingRight,
     backgroundColor,
     roundness,
+=======
+    paddingOffset,
+>>>>>>> c56af130 (Apply customisations)
     errorColor,
     labelTranslationXOffset,
     maxFontSizeMultiplier,
@@ -150,6 +154,7 @@ const InputLabel = (props: InputLabelProps) => {
           labelTranslationX,
         ]}
       >
+<<<<<<< HEAD
         <View
           style={{
             width: labelWidth,
@@ -206,6 +211,29 @@ const InputLabel = (props: InputLabelProps) => {
       </Animated.View>
     </View>
   );
+=======
+        {label}
+      </AnimatedText>
+      <AnimatedText
+        style={[
+          placeholderStyle,
+          {
+            top: topPosition,
+          },
+          labelStyle,
+          paddingOffset,
+          {
+            color: error && errorColor ? errorColor : activeColor,
+            opacity: placeholderOpacity,
+          },
+        ]}
+        numberOfLines={1}
+      >
+        {label}
+      </AnimatedText>
+    </Animated.View>
+  ) : null;
+>>>>>>> c56af130 (Apply customisations)
 };
 
 const styles = StyleSheet.create({

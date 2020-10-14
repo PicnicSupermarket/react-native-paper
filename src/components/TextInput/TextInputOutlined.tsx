@@ -199,6 +199,7 @@ const TextInputOutlined = ({
 
   let paddingOut = paddingOutDefault;
 
+<<<<<<< HEAD
   if (paddingVertical !== undefined) {
     if (typeof paddingVertical !== 'number') {
       console.warn('Currently we support only numbers in paddingVertical prop');
@@ -206,6 +207,193 @@ const TextInputOutlined = ({
       paddingOut = {
         paddingTop: paddingVertical,
         paddingBottom: paddingVertical,
+=======
+    const {
+      fontSize: fontSizeStyle,
+      fontWeight,
+      height,
+      backgroundColor = colors.background,
+      paddingHorizontal,
+      textAlign,
+      ...viewStyle
+    } = (StyleSheet.flatten(style) || {}) as TextStyle;
+    const fontSize = fontSizeStyle || MAXIMIZED_LABEL_FONT_SIZE;
+
+    let inputTextColor, activeColor, outlineColor, placeholderColor, errorColor;
+
+    if (disabled) {
+      inputTextColor = activeColor = color(colors.text)
+        .alpha(0.54)
+        .rgb()
+        .string();
+      placeholderColor = outlineColor = colors.disabled;
+    } else {
+      inputTextColor = colors.text;
+      activeColor = error ? colors.error : colors.primary;
+      placeholderColor = outlineColor = colors.placeholder;
+      errorColor = colors.error;
+    }
+
+    const labelScale = MINIMIZED_LABEL_FONT_SIZE / fontSize;
+    const fontScale = MAXIMIZED_LABEL_FONT_SIZE / fontSize;
+
+    const labelWidth = parentState.labelLayout.width;
+    const labelHeight = parentState.labelLayout.height;
+    const labelHalfWidth = labelWidth / 2;
+    const labelHalfHeight = labelHeight / 2;
+
+    const baseLabelTranslateX =
+      (I18nManager.isRTL ? 1 : -1) *
+      (labelHalfWidth -
+        (labelScale * labelWidth) / 2 -
+        (fontSize - MINIMIZED_LABEL_FONT_SIZE) * labelScale);
+
+    let labelTranslationXOffset = 0;
+    const isAdornmentLeftIcon = adornmentConfig.some(
+      ({ side, type }) =>
+        side === AdornmentSide.Left && type === AdornmentType.Icon
+    );
+    if (isAdornmentLeftIcon) {
+      labelTranslationXOffset =
+        (I18nManager.isRTL ? -1 : 1) * (ADORNMENT_SIZE + ADORNMENT_OFFSET - 8);
+    }
+
+    const minInputHeight =
+      (dense ? MIN_DENSE_HEIGHT : MIN_HEIGHT) - LABEL_PADDING_TOP;
+
+    const inputHeight = calculateInputHeight(
+      labelHeight,
+      height,
+      minInputHeight
+    );
+
+    const topPosition = calculateLabelTopPosition(
+      labelHeight,
+      inputHeight,
+      LABEL_PADDING_TOP
+    );
+
+    if (height && typeof height !== 'number') {
+      // eslint-disable-next-line
+      console.warn('Currently we support only numbers in height prop');
+    }
+
+    const paddingSettings = {
+      height: height ? +height : null,
+      labelHalfHeight,
+      offset: LABEL_PADDING_TOP,
+      multiline: multiline ? multiline : null,
+      dense: dense ? dense : null,
+      topPosition,
+      fontSize,
+      label,
+      scale: fontScale,
+      isAndroid: Platform.OS === 'android',
+      styles: StyleSheet.flatten(
+        dense ? styles.inputOutlinedDense : styles.inputOutlined
+      ) as Padding,
+    };
+
+    const pad = calculatePadding(paddingSettings);
+
+    const paddingOut = adjustPaddingOut({ ...paddingSettings, pad });
+
+    const baseLabelTranslateY =
+      -labelHalfHeight - (topPosition + OUTLINE_MINIMIZED_LABEL_Y_OFFSET);
+
+      const placeholderOpacity = hasActiveOutline
+        ? interpolatePlaceholder(parentState.labeled, hasActiveOutline)
+        : parentState.labelLayout.measured
+        ? 1
+        : 0;
+
+    const labelProps = {
+      label,
+      onLayoutAnimatedText,
+      placeholderOpacity,
+      error,
+      placeholderStyle: StyleSheet.flatten([styles.placeholder, { paddingHorizontal }]),
+      baseLabelTranslateY,
+      baseLabelTranslateX,
+      font,
+      fontSize,
+      fontWeight,
+      labelScale,
+      wiggleOffsetX: LABEL_WIGGLE_X_OFFSET,
+      topPosition,
+      hasActiveOutline,
+      activeColor,
+      placeholderColor,
+      backgroundColor: backgroundColor as ColorValue,
+      errorColor,
+      labelTranslationXOffset,
+    };
+
+    const minHeight = (height ||
+      (dense ? MIN_DENSE_HEIGHT : MIN_HEIGHT)) as number;
+
+    const { leftLayout, rightLayout } = parentState;
+
+    const leftAffixTopPosition = calculateOutlinedIconAndAffixTopPosition({
+      height: minHeight,
+      affixHeight: leftLayout.height || 0,
+      labelYOffset: -OUTLINE_MINIMIZED_LABEL_Y_OFFSET,
+    });
+
+    const rightAffixTopPosition = calculateOutlinedIconAndAffixTopPosition({
+      height: minHeight,
+      affixHeight: rightLayout.height || 0,
+      labelYOffset: -OUTLINE_MINIMIZED_LABEL_Y_OFFSET,
+    });
+    const iconTopPosition = calculateOutlinedIconAndAffixTopPosition({
+      height: minHeight,
+      affixHeight: ADORNMENT_SIZE,
+      labelYOffset: -OUTLINE_MINIMIZED_LABEL_Y_OFFSET,
+    });
+
+    const rightAffixWidth = right
+      ? rightLayout.width || ADORNMENT_SIZE
+      : ADORNMENT_SIZE;
+
+    const leftAffixWidth = left
+      ? leftLayout.width || ADORNMENT_SIZE
+      : ADORNMENT_SIZE;
+
+    const adornmentStyleAdjustmentForNativeInput = getAdornmentStyleAdjustmentForNativeInput(
+      {
+        adornmentConfig,
+        rightAffixWidth,
+        leftAffixWidth,
+        mode: 'outlined',
+      }
+    );
+    const affixTopPosition = {
+      [AdornmentSide.Left]: leftAffixTopPosition,
+      [AdornmentSide.Right]: rightAffixTopPosition,
+    };
+    const onAffixChange = {
+      [AdornmentSide.Left]: onLeftAffixLayoutChange,
+      [AdornmentSide.Right]: onRightAffixLayoutChange,
+    };
+
+    let adornmentProps: TextInputAdornmentProps = {
+      adornmentConfig,
+      forceFocus,
+      topPosition: {
+        [AdornmentType.Icon]: iconTopPosition,
+        [AdornmentType.Affix]: affixTopPosition,
+      },
+      onAffixChange,
+      isTextInputFocused: parentState.focused,
+    };
+    if (adornmentConfig.length) {
+      adornmentProps = {
+        ...adornmentProps,
+        left,
+        right,
+        textStyle: { ...font, fontSize, fontWeight },
+        visible: this.props.parentState.labeled,
+>>>>>>> c56af130 (Apply customisations)
       };
     }
   }
@@ -420,6 +608,7 @@ const TextInputOutlined = ({
             labelBackground={LabelBackground}
             maxFontSizeMultiplier={rest.maxFontSizeMultiplier}
           />
+<<<<<<< HEAD
         ) : null}
         {render?.({
           ...rest,
@@ -465,6 +654,64 @@ const TextInputOutlined = ({
           ],
           testID,
         } as RenderProps)}
+=======
+          <View
+            style={[
+              styles.labelContainer,
+              {
+                paddingTop: LABEL_PADDING_TOP,
+                minHeight,
+              },
+            ]}
+          >
+            <InputLabel
+              parentState={parentState}
+              labelProps={labelProps}
+              labelBackground={LabelBackground}
+            />
+            {render?.({
+              ...rest,
+              ref: innerRef,
+              onChangeText,
+              placeholder: label
+                ? parentState.placeholder
+                : this.props.placeholder,
+              placeholderTextColor: placeholderTextColor || placeholderColor,
+              editable: !disabled && editable,
+              selectionColor:
+                typeof selectionColor === 'undefined'
+                  ? activeColor
+                  : selectionColor,
+              onFocus,
+              onBlur,
+              underlineColorAndroid: 'transparent',
+              multiline,
+              style: [
+                styles.input,
+                !multiline || (multiline && height)
+                  ? { height: inputHeight }
+                  : {},
+                paddingOut,
+                { paddingHorizontal },
+                {
+                  ...font,
+                  fontSize,
+                  fontWeight,
+                  color: inputTextColor,
+                  textAlignVertical: multiline ? 'top' : 'center',
+                  textAlign: textAlign
+                    ? textAlign
+                    : I18nManager.isRTL
+                    ? 'right'
+                    : 'left',
+                },
+                adornmentStyleAdjustmentForNativeInput,
+              ],
+            } as RenderProps)}
+          </View>
+          <TextInputAdornment {...adornmentProps} />
+        </View>
+>>>>>>> c56af130 (Apply customisations)
       </View>
       <TextInputAdornment {...adornmentProps} />
     </View>
@@ -473,6 +720,37 @@ const TextInputOutlined = ({
 
 export default TextInputOutlined;
 
+<<<<<<< HEAD
+=======
+type OutlineProps = {
+  activeColor: string;
+  hasActiveOutline?: boolean;
+  outlineColor?: string;
+  backgroundColor: ColorValue;
+  theme: ReactNativePaper.Theme;
+};
+
+const Outline = ({
+  theme,
+  activeColor,
+  backgroundColor,
+}: OutlineProps) => (
+  <View
+    pointerEvents="none"
+    style={[
+      styles.outline,
+      // eslint-disable-next-line react-native/no-inline-styles
+      {
+        backgroundColor,
+        borderRadius: theme.roundness,
+        borderWidth: 2,
+        borderColor: activeColor,
+      },
+    ]}
+  />
+);
+
+>>>>>>> c56af130 (Apply customisations)
 const styles = StyleSheet.create({
   labelContainer: {
     paddingBottom: 0,
