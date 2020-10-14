@@ -93,6 +93,7 @@ class TextInputOutlined extends React.Component<ChildTextInputProps> {
       fontWeight,
       height,
       backgroundColor = colors.background,
+      paddingHorizontal,
       textAlign,
       ...viewStyle
     } = (StyleSheet.flatten(style) || {}) as TextStyle;
@@ -180,18 +181,18 @@ class TextInputOutlined extends React.Component<ChildTextInputProps> {
     const baseLabelTranslateY =
       -labelHalfHeight - (topPosition + OUTLINE_MINIMIZED_LABEL_Y_OFFSET);
 
-    const placeholderOpacity = hasActiveOutline
-      ? interpolatePlaceholder(parentState.labeled, hasActiveOutline)
-      : parentState.labelLayout.measured
-      ? 1
-      : 0;
+      const placeholderOpacity = hasActiveOutline
+        ? interpolatePlaceholder(parentState.labeled, hasActiveOutline)
+        : parentState.labelLayout.measured
+        ? 1
+        : 0;
 
     const labelProps = {
       label,
       onLayoutAnimatedText,
       placeholderOpacity,
       error,
-      placeholderStyle: styles.placeholder,
+      placeholderStyle: StyleSheet.flatten([styles.placeholder, { paddingHorizontal }]),
       baseLabelTranslateY,
       baseLabelTranslateX,
       font,
@@ -327,6 +328,7 @@ class TextInputOutlined extends React.Component<ChildTextInputProps> {
                   ? { height: inputHeight }
                   : {},
                 paddingOut,
+                { paddingHorizontal },
                 {
                   ...font,
                   fontSize,
@@ -362,9 +364,7 @@ type OutlineProps = {
 
 const Outline = ({
   theme,
-  hasActiveOutline,
   activeColor,
-  outlineColor,
   backgroundColor,
 }: OutlineProps) => (
   <View
@@ -375,8 +375,8 @@ const Outline = ({
       {
         backgroundColor,
         borderRadius: theme.roundness,
-        borderWidth: hasActiveOutline ? 2 : 1,
-        borderColor: hasActiveOutline ? activeColor : outlineColor,
+        borderWidth: 2,
+        borderColor: activeColor,
       },
     ]}
   />
