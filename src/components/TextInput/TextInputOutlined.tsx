@@ -94,6 +94,9 @@ class TextInputOutlined extends React.Component<ChildTextInputProps> {
       height,
       backgroundColor = colors.background,
       paddingHorizontal,
+      paddingVertical,
+      paddingTop,
+      paddingBottom,
       textAlign,
       ...viewStyle
     } = (StyleSheet.flatten(style) || {}) as TextStyle;
@@ -176,7 +179,38 @@ class TextInputOutlined extends React.Component<ChildTextInputProps> {
 
     const pad = calculatePadding(paddingSettings);
 
-    const paddingOut = adjustPaddingOut({ ...paddingSettings, pad });
+    let paddingOut = adjustPaddingOut({ ...paddingSettings, pad });
+
+    if (paddingVertical) {
+      if (typeof paddingVertical !== 'number') {
+        console.warn('Currently we support only numbers in paddingVertical prop');
+      } else {
+        paddingOut = {
+          paddingTop: paddingVertical,
+          paddingBottom: paddingVertical
+        }
+      }
+    }
+    if (paddingBottom) {
+      if (typeof paddingBottom !== 'number') {
+        console.warn('Currently we support only numbers in paddingBottom prop');
+      } else {
+        paddingOut = {
+          ...paddingOut,
+          paddingBottom: paddingBottom
+        }
+      }
+    }
+    if (paddingTop) {
+      if (typeof paddingTop !== 'number') {
+        console.warn('Currently we support only numbers in paddingTop prop');
+      } else {
+        paddingOut = {
+          ...paddingOut,
+          paddingTop: paddingTop
+        }
+      }
+    }
 
     const baseLabelTranslateY =
       -labelHalfHeight - (topPosition + OUTLINE_MINIMIZED_LABEL_Y_OFFSET);
