@@ -1,6 +1,6 @@
 {
   "name": "react-native-paper",
-  "version": "4.7.2",
+  "version": "4.7.2-picnic",
   "description": "Material design for React Native",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
@@ -41,9 +41,6 @@
     "bootstrap": "yarn --cwd example && yarn --cwd docs && yarn",
     "docs": "yarn --cwd docs",
     "example": "yarn --cwd example"
-  },
-  "publishConfig": {
-    "registry": "https://registry.npmjs.org/"
   },
   "dependencies": {
     "@callstack/react-theme-provider": "^3.0.5",
@@ -102,8 +99,7 @@
     "react-native-vector-icons": "*"
   },
   "husky": {
-    "hooks": {
-    }
+    "hooks": {}
   },
   "jest": {
     "preset": "react-native",
