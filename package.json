@@ -1,6 +1,6 @@
 {
   "name": "react-native-paper",
-  "version": "5.15.0-picnic.0",
+  "version": "5.15.0-picnic",
   "description": "Material design for React Native",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
@@ -46,9 +46,6 @@
     "release": "release-it",
     "docs": "yarn --cwd docs",
     "example": "yarn --cwd example"
-  },
-  "publishConfig": {
-    "registry": "https://registry.npmjs.org/"
   },
   "dependencies": {
     "@callstack/react-theme-provider": "^3.0.9",
