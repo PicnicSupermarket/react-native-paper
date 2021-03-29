@@ -1,13 +1,12 @@
 import * as React from 'react';
 import {
   Animated,
-  LayoutChangeEvent,
-  StyleProp,
   TextInput as NativeTextInput,
-  TextStyle,
+  LayoutChangeEvent,
+  StyleProp, TextStyle,
   ViewStyle,
   NativeSyntheticEvent,
-  TextLayoutEventData,
+  TextLayoutEventData
 } from 'react-native';
 
 import TextInputAffix, {
