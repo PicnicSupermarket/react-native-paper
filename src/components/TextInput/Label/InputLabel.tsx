@@ -94,6 +94,7 @@ const InputLabel = (props: InputLabelProps) => {
         labelProps: props.labelProps,
       })}
       <AnimatedText
+        accessible={false}
         onLayout={onLayoutAnimatedText}
         style={[
           placeholderStyle,
@@ -115,6 +116,7 @@ const InputLabel = (props: InputLabelProps) => {
         {label}
       </AnimatedText>
       <AnimatedText
+        accessible={false}
         style={[
           placeholderStyle,
           {

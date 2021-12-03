@@ -50,6 +50,7 @@ const LabelBackground = ({
           ]}
         />,
         <AnimatedText
+          accessible={false}
           key="labelBackground-text"
           style={[
             placeholderStyle,
