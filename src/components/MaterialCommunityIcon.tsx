@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { StyleSheet, Text, Platform, TextProps, ViewProps } from 'react-native';
+import { Platform, StyleSheet, Text, TextProps, ViewProps } from 'react-native';
 
 export type IconProps = {
   name: string;
@@ -62,7 +62,7 @@ try {
 export const accessibilityProps =
   Platform.OS === 'web'
     ? {
-        role: 'img',
+        role: 'img' as any,
         focusable: false,
       }
     : {

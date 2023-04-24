@@ -6,7 +6,7 @@ import type {
   ColorValue,
 } from 'react-native';
 import type { TextInputProps } from './TextInput';
-import type { $Omit } from './../../types';
+import type { $Omit } from '../../types';
 
 export type RenderProps = {
   ref: (a?: NativeTextInput | null) => void;
@@ -49,7 +49,10 @@ export type ChildTextInputProps = {
 export type LabelProps = {
   mode?: 'flat' | 'outlined';
   placeholderStyle: any;
-  placeholderOpacity: number | Animated.Value | Animated.AnimatedInterpolation;
+  placeholderOpacity:
+    | number
+    | Animated.Value
+    | Animated.AnimatedInterpolation<number>;
   baseLabelTranslateX: number;
   baseLabelTranslateY: number;
   wiggleOffsetX: number;

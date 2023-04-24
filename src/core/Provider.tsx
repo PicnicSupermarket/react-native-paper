@@ -6,6 +6,8 @@ import MaterialCommunityIcon from '../components/MaterialCommunityIcon';
 import PortalHost from '../components/Portal/PortalHost';
 import DefaultTheme from '../styles/DefaultTheme';
 import DarkTheme from '../styles/DarkTheme';
+import type { EmitterSubscription } from 'react-native/Libraries/vendor/emitter/EventEmitter';
+import type { NativeEventSubscription } from 'react-native/Libraries/EventEmitter/RCTNativeAppEventEmitter';
 
 type Props = {
   children: React.ReactNode;
@@ -32,27 +34,29 @@ const Provider = ({ ...props }: Props) => {
   };
 
   React.useEffect(() => {
+    let accessibilityInfoListener: EmitterSubscription;
     if (!props.theme) {
-      AccessibilityInfo.addEventListener(
+      accessibilityInfoListener = AccessibilityInfo.addEventListener(
         'reduceMotionChanged',
         setReduceMotionEnabled
       );
     }
     return () => {
       if (!props.theme) {
-        AccessibilityInfo.removeEventListener(
-          'reduceMotionChanged',
-          setReduceMotionEnabled
-        );
+        accessibilityInfoListener?.remove();
       }
     };
   }, [props.theme]);
 
   React.useEffect(() => {
-    if (!props.theme) Appearance?.addChangeListener(handleAppearanceChange);
+    let appearanceListener: NativeEventSubscription;
+    if (!props.theme) {
+      appearanceListener = Appearance?.addChangeListener(
+        handleAppearanceChange
+      );
+    }
     return () => {
-      if (!props.theme)
-        Appearance?.removeChangeListener(handleAppearanceChange);
+      if (!props.theme) appearanceListener?.remove();
     };
   }, [props.theme]);
 
