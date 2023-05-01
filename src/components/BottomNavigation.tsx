@@ -23,6 +23,7 @@ import { withTheme } from '../core/theming';
 import useAnimatedValue from '../utils/useAnimatedValue';
 import useAnimatedValueArray from '../utils/useAnimatedValueArray';
 import useLayout from '../utils/useLayout';
+import type { EmitterSubscription } from 'react-native/Libraries/vendor/emitter/EventEmitter';
 
 type Route = {
   key: string;
@@ -478,22 +479,31 @@ const BottomNavigation = ({
   }, []);
 
   React.useEffect(() => {
+    let showListener: EmitterSubscription;
+    let hideListener: EmitterSubscription;
     if (Platform.OS === 'ios') {
-      Keyboard.addListener('keyboardWillShow', handleKeyboardShow);
-      Keyboard.addListener('keyboardWillHide', handleKeyboardHide);
+      showListener = Keyboard.addListener(
+        'keyboardWillShow',
+        handleKeyboardShow
+      );
+      hideListener = Keyboard.addListener(
+        'keyboardWillHide',
+        handleKeyboardHide
+      );
     } else {
-      Keyboard.addListener('keyboardDidShow', handleKeyboardShow);
-      Keyboard.addListener('keyboardDidHide', handleKeyboardHide);
+      showListener = Keyboard.addListener(
+        'keyboardDidShow',
+        handleKeyboardShow
+      );
+      hideListener = Keyboard.addListener(
+        'keyboardDidHide',
+        handleKeyboardHide
+      );
     }
 
     return () => {
-      if (Platform.OS === 'ios') {
-        Keyboard.removeListener('keyboardWillShow', handleKeyboardShow);
-        Keyboard.removeListener('keyboardWillHide', handleKeyboardHide);
-      } else {
-        Keyboard.removeListener('keyboardDidShow', handleKeyboardShow);
-        Keyboard.removeListener('keyboardDidHide', handleKeyboardHide);
-      }
+      showListener?.remove();
+      hideListener?.remove();
     };
   }, [handleKeyboardHide, handleKeyboardShow]);
 

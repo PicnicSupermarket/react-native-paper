@@ -1,19 +1,19 @@
 import * as React from 'react';
 import {
-  Platform,
-  StyleProp,
-  StyleSheet,
   Animated,
   BackHandler,
   Dimensions,
   Easing,
+  findNodeHandle,
   I18nManager,
   LayoutRectangle,
+  Platform,
+  ScrollView,
+  StyleProp,
+  StyleSheet,
   TouchableWithoutFeedback,
   View,
   ViewStyle,
-  ScrollView,
-  findNodeHandle,
 } from 'react-native';
 
 import { withTheme } from '../../core/theming';
@@ -21,8 +21,9 @@ import type { $Omit } from '../../types';
 import Portal from '../Portal/Portal';
 import Surface from '../Surface';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import MenuItem, { MenuItem as _MenuItem } from './MenuItem';
+import MenuItem from './MenuItem';
 import { APPROX_STATUSBAR_HEIGHT } from '../../constants';
+import type { EmitterSubscription } from 'react-native/Libraries/vendor/emitter/EventEmitter';
 
 type Props = {
   /**
@@ -137,6 +138,8 @@ class Menu extends React.Component<Props, State> {
     overlayAccessibilityLabel: 'Close menu',
   };
 
+  private dimensionListener?: EmitterSubscription = undefined;
+
   static getDerivedStateFromProps(nextProps: Props, prevState: State) {
     if (nextProps.visible && !prevState.rendered) {
       return { rendered: true };
@@ -241,14 +244,17 @@ class Menu extends React.Component<Props, State> {
 
   private attachListeners = () => {
     BackHandler.addEventListener('hardwareBackPress', this.handleDismiss);
-    Dimensions.addEventListener('change', this.handleDismiss);
+    this.dimensionListener = Dimensions.addEventListener(
+      'change',
+      this.handleDismiss
+    );
 
     this.isBrowser() && document.addEventListener('keyup', this.handleKeypress);
   };
 
   private removeListeners = () => {
     BackHandler.removeEventListener('hardwareBackPress', this.handleDismiss);
-    Dimensions.removeEventListener('change', this.handleDismiss);
+    this.dimensionListener?.remove();
 
     this.isBrowser() &&
       document.removeEventListener('keyup', this.handleKeypress);
