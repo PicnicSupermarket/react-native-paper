@@ -43,7 +43,6 @@ const InputLabel = (props: InputLabelProps) => {
     paddingRight,
     backgroundColor,
     roundness,
-    placeholderColor,
     errorColor,
     labelTranslationXOffset,
     maxFontSizeMultiplier,
@@ -132,7 +131,7 @@ const InputLabel = (props: InputLabelProps) => {
   ];
 
   const textColor = (
-    labelError && errorColor ? errorColor : placeholderColor
+    labelError && errorColor ? errorColor : activeColor
   ) as ColorValue;
 
   return (
@@ -171,6 +170,7 @@ const InputLabel = (props: InputLabelProps) => {
             testID,
           })}
           <AnimatedText
+            accessible={false}
             variant="bodySmall"
             onLayout={onLayoutAnimatedText}
             onTextLayout={onLabelTextLayout}
@@ -187,6 +187,7 @@ const InputLabel = (props: InputLabelProps) => {
             {label}
           </AnimatedText>
           <AnimatedText
+            accessible={false}
             variant={focused ? 'bodyLarge' : 'bodySmall'}
             style={[
               commonStyles,

@@ -67,8 +67,13 @@ lib/
 
 # Yarn
 .yarn/*
+<<<<<<< HEAD
 !.yarn/patches
 !.yarn/plugins
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+=======
+
+.cursor/*
+>>>>>>> 2d5f5f3f (rebase to v5.13.0)
