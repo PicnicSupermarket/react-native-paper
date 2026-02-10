@@ -1,0 +1,46 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renders ListImage with default variant & styles 1`] = `
+<Image
+  accessibilityIgnoresInvertColors={true}
+  source={
+    {
+      "testUri": "../../../example/assets/images/strawberries.jpg",
+    }
+  }
+  style={
+    [
+      {
+        "height": 56,
+        "width": 30,
+      },
+      {
+        "height": 56,
+        "width": 56,
+      },
+    ]
+  }
+  testID="list-image"
+/>
+`;
+
+exports[`renders ListImage with default variant 1`] = `
+<Image
+  accessibilityIgnoresInvertColors={true}
+  source={
+    {
+      "testUri": "../../../example/assets/images/strawberries.jpg",
+    }
+  }
+  style={
+    [
+      undefined,
+      {
+        "height": 56,
+        "width": 56,
+      },
+    ]
+  }
+  testID="list-image"
+/>
+`;

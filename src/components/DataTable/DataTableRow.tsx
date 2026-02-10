@@ -1,12 +1,21 @@
 import * as React from 'react';
-import color from 'color';
-import { StyleSheet, StyleProp, View, ViewStyle } from 'react-native';
-import TouchableRipple from '../TouchableRipple/TouchableRipple';
-import { black, white } from '../../styles/colors';
-import { withTheme } from '../../core/theming';
-import type { $RemoveChildren } from '../../types';
+import {
+  GestureResponderEvent,
+  StyleProp,
+  StyleSheet,
+  View,
+  ViewProps,
+  ViewStyle,
+} from 'react-native';
 
-type Props = $RemoveChildren<typeof TouchableRipple> & {
+import color from 'color';
+
+import { useInternalTheme } from '../../core/theming';
+import { black, white } from '../../styles/themes/v2/colors';
+import type { $RemoveChildren, ThemeProp } from '../../types';
+import TouchableRipple from '../TouchableRipple/TouchableRipple';
+
+export type Props = $RemoveChildren<typeof TouchableRipple> & {
   /**
    * Content of the `DataTableRow`.
    */
@@ -14,23 +23,20 @@ type Props = $RemoveChildren<typeof TouchableRipple> & {
   /**
    * Function to execute on press.
    */
-  onPress?: () => void;
+  onPress?: (e: GestureResponderEvent) => void;
   style?: StyleProp<ViewStyle>;
   /**
    * @optional
    */
-  theme: ReactNativePaper.Theme;
+  theme?: ThemeProp;
+  /**
+   * `pointerEvents` passed to the `View` container, which is wrapping children within `TouchableRipple`.
+   */
+  pointerEvents?: ViewProps['pointerEvents'];
 };
 
 /**
  * A component to show a single row inside of a table.
- *
- * <div class="screenshots">
- *   <figure>
- *     <img class="medium" src="screenshots/data-table-row-cell.png" />
- *   </figure>
- * </div>
- *
  *
  * ## Usage
  * ```js
@@ -48,13 +54,24 @@ type Props = $RemoveChildren<typeof TouchableRipple> & {
  *
  * export default MyComponent;
  * ```
+ *
+ * @extends TouchableRipple props https://callstack.github.io/react-native-paper/docs/components/TouchableRipple
  */
-
-const DataTableRow = ({ onPress, style, theme, children, ...rest }: Props) => {
-  const borderBottomColor = color(theme.dark ? white : black)
-    .alpha(0.12)
-    .rgb()
-    .string();
+const DataTableRow = ({
+  onPress,
+  style,
+  children,
+  pointerEvents,
+  theme: themeOverrides,
+  ...rest
+}: Props) => {
+  const theme = useInternalTheme(themeOverrides);
+  const borderBottomColor = theme.isV3
+    ? theme.colors.surfaceVariant
+    : color(theme.dark ? white : black)
+        .alpha(0.12)
+        .rgb()
+        .string();
 
   return (
     <TouchableRipple
@@ -62,10 +79,14 @@ const DataTableRow = ({ onPress, style, theme, children, ...rest }: Props) => {
       onPress={onPress}
       style={[styles.container, { borderBottomColor }, style]}
     >
-      <View style={styles.content}>{children}</View>
+      <View style={styles.content} pointerEvents={pointerEvents}>
+        {children}
+      </View>
     </TouchableRipple>
   );
 };
+
+DataTableRow.displayName = 'DataTable.Row';
 
 const styles = StyleSheet.create({
   container: {
@@ -80,7 +101,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export default withTheme(DataTableRow);
+export default DataTableRow;
 
 // @component-docs ignore-next-line
 export { DataTableRow };

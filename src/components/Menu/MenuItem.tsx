@@ -1,56 +1,98 @@
-import color from 'color';
 import * as React from 'react';
 import {
-  View,
+  AccessibilityState,
+  ColorValue,
+  GestureResponderEvent,
+  PressableAndroidRippleConfig,
+  StyleProp,
   StyleSheet,
   TextStyle,
+  View,
   ViewStyle,
-  StyleProp,
 } from 'react-native';
+
+import {
+  getContentMaxWidth,
+  getMenuItemColor,
+  MAX_WIDTH,
+  MIN_WIDTH,
+} from './utils';
+import { useInternalTheme } from '../../core/theming';
+import type { ThemeProp } from '../../types';
 import Icon, { IconSource } from '../Icon';
 import TouchableRipple from '../TouchableRipple/TouchableRipple';
 import Text from '../Typography/Text';
-import { withTheme } from '../../core/theming';
-import { black, white } from '../../styles/colors';
 
-type Props = {
+export type Props = {
   /**
    * Title text for the `MenuItem`.
    */
   title: React.ReactNode;
   /**
-   * Icon to display for the `MenuItem`.
+   * @renamed Renamed from 'icon' to 'leadingIcon' in v5.x
+   *
+   * Leading icon to display for the `MenuItem`.
    */
-  icon?: IconSource;
+  leadingIcon?: IconSource;
+  /**
+   * @supported Available in v5.x with theme version 3
+   *
+   * Trailing icon to display for the `MenuItem`.
+   */
+  trailingIcon?: IconSource;
   /**
    * Whether the 'item' is disabled. A disabled 'item' is greyed out and `onPress` is not called on touch.
    */
   disabled?: boolean;
   /**
+   * @supported Available in v5.x with theme version 3
+   *
+   * Sets min height with densed layout.
+   */
+  dense?: boolean;
+  /**
+   * Type of background drawabale to display the feedback (Android).
+   * https://reactnative.dev/docs/pressable#rippleconfig
+   */
+  background?: PressableAndroidRippleConfig;
+  /**
    * Function to execute on press.
    */
-  onPress?: () => void;
+  onPress?: (e: GestureResponderEvent) => void;
+  /**
+   * Specifies the largest possible scale a title font can reach.
+   */
+  titleMaxFontSizeMultiplier?: number;
   /**
    * @optional
    */
-  theme: ReactNativePaper.Theme;
   style?: StyleProp<ViewStyle>;
   contentStyle?: StyleProp<ViewStyle>;
   titleStyle?: StyleProp<TextStyle>;
   /**
+   * Color of the ripple effect.
+   */
+  rippleColor?: ColorValue;
+  /**
+   * @optional
+   */
+  theme?: ThemeProp;
+  /**
    * TestID used for testing purposes
    */
   testID?: string;
+  /**
+   * Accessibility label for the Touchable. This is read by the screen reader when the user taps the component.
+   */
+  accessibilityLabel?: string;
+  /**
+   * Accessibility state for the Touchable. This is read by the screen reader when the user taps the component.
+   */
+  accessibilityState?: AccessibilityState;
 };
 
 /**
  * A component to show a single list item inside a Menu.
- *
- * <div class="screenshots">
- *   <figure>
- *     <img class="medium" src="screenshots/menu-item.png" />
- *   </figure>
- * </div>
  *
  * ## Usage
  * ```js
@@ -60,102 +102,140 @@ type Props = {
  *
  * const MyComponent = () => (
  *   <View style={{ flex: 1 }}>
- *     <Menu.Item icon="redo" onPress={() => {}} title="Redo" />
- *     <Menu.Item icon="undo" onPress={() => {}} title="Undo" />
- *     <Menu.Item icon="content-cut" onPress={() => {}} title="Cut" disabled />
- *     <Menu.Item icon="content-copy" onPress={() => {}} title="Copy" disabled />
- *     <Menu.Item icon="content-paste" onPress={() => {}} title="Paste" />
+ *     <Menu.Item leadingIcon="redo" onPress={() => {}} title="Redo" />
+ *     <Menu.Item leadingIcon="undo" onPress={() => {}} title="Undo" />
+ *     <Menu.Item leadingIcon="content-cut" onPress={() => {}} title="Cut" disabled />
+ *     <Menu.Item leadingIcon="content-copy" onPress={() => {}} title="Copy" disabled />
+ *     <Menu.Item leadingIcon="content-paste" onPress={() => {}} title="Paste" />
  *   </View>
  * );
  *
  * export default MyComponent;
  * ```
  */
+const MenuItem = ({
+  leadingIcon,
+  trailingIcon,
+  dense,
+  title,
+  disabled,
+  background,
+  onPress,
+  style,
+  contentStyle,
+  titleStyle,
+  rippleColor: customRippleColor,
+  testID = 'menu-item',
+  accessibilityLabel,
+  accessibilityState,
+  theme: themeOverrides,
+  titleMaxFontSizeMultiplier = 1.5,
+}: Props) => {
+  const theme = useInternalTheme(themeOverrides);
+  const { titleColor, iconColor, rippleColor } = getMenuItemColor({
+    theme,
+    disabled,
+    customRippleColor,
+  });
+  const { isV3 } = theme;
 
-class MenuItem extends React.Component<Props> {
-  static displayName = 'Menu.Item';
+  const containerPadding = isV3 ? 12 : 8;
 
-  render() {
-    const {
-      icon,
-      title,
-      disabled,
-      onPress,
-      theme,
-      style,
-      contentStyle,
-      testID,
-      titleStyle,
-    } = this.props;
+  const iconWidth = isV3 ? 24 : 40;
 
-    const disabledColor = color(theme.dark ? white : black)
-      .alpha(0.32)
-      .rgb()
-      .string();
+  const minWidth = MIN_WIDTH - (isV3 ? 12 : 16);
 
-    const titleColor = disabled
-      ? disabledColor
-      : color(theme.colors.text).alpha(0.87).rgb().string();
+  const maxWidth = getContentMaxWidth({
+    isV3,
+    iconWidth,
+    leadingIcon,
+    trailingIcon,
+  });
 
-    const iconColor = disabled
-      ? disabledColor
-      : color(theme.colors.text).alpha(0.54).rgb().string();
+  const titleTextStyle = {
+    color: titleColor,
+    ...(isV3 ? theme.fonts.bodyLarge : {}),
+  };
 
-    return (
-      <TouchableRipple
-        style={[styles.container, style]}
-        onPress={onPress}
-        disabled={disabled}
-        testID={testID}
-        accessibilityRole="menuitem"
-        accessibilityState={{ disabled }}
-      >
-        <View style={styles.row}>
-          {icon ? (
-            <View style={[styles.item, styles.icon]} pointerEvents="box-none">
-              <Icon source={icon} size={24} color={iconColor} />
-            </View>
-          ) : null}
+  const newAccessibilityState = { ...accessibilityState, disabled };
+
+  return (
+    <TouchableRipple
+      style={[
+        styles.container,
+        { paddingHorizontal: containerPadding },
+        dense && styles.md3DenseContainer,
+        style,
+      ]}
+      onPress={onPress}
+      disabled={disabled}
+      testID={testID}
+      background={background}
+      accessibilityLabel={accessibilityLabel}
+      accessibilityRole="menuitem"
+      accessibilityState={newAccessibilityState}
+      rippleColor={rippleColor}
+    >
+      <View style={styles.row}>
+        {leadingIcon ? (
           <View
-            style={[
-              styles.item,
-              styles.content,
-              icon ? styles.widthWithIcon : null,
-              contentStyle,
-            ]}
-            pointerEvents="none"
+            style={[!isV3 && styles.item, { width: iconWidth }]}
+            pointerEvents="box-none"
           >
-            <Text
-              selectable={false}
-              numberOfLines={1}
-              style={[styles.title, { color: titleColor }, titleStyle]}
-            >
-              {title}
-            </Text>
+            <Icon source={leadingIcon} size={24} color={iconColor} />
           </View>
+        ) : null}
+        <View
+          style={[
+            !isV3 && styles.item,
+            styles.content,
+            { minWidth, maxWidth },
+            isV3 &&
+              (leadingIcon
+                ? styles.md3LeadingIcon
+                : styles.md3WithoutLeadingIcon),
+            contentStyle,
+          ]}
+          pointerEvents="none"
+        >
+          <Text
+            variant="bodyLarge"
+            selectable={false}
+            numberOfLines={1}
+            testID={`${testID}-title`}
+            style={[!isV3 && styles.title, titleTextStyle, titleStyle]}
+            maxFontSizeMultiplier={titleMaxFontSizeMultiplier}
+          >
+            {title}
+          </Text>
         </View>
-      </TouchableRipple>
-    );
-  }
-}
+        {isV3 && trailingIcon ? (
+          <View
+            style={[!isV3 && styles.item, { width: iconWidth }]}
+            pointerEvents="box-none"
+          >
+            <Icon source={trailingIcon} size={24} color={iconColor} />
+          </View>
+        ) : null}
+      </View>
+    </TouchableRipple>
+  );
+};
 
-const minWidth = 112;
-const maxWidth = 280;
-const iconWidth = 40;
+MenuItem.displayName = 'Menu.Item';
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 8,
-    minWidth,
-    maxWidth,
+    minWidth: MIN_WIDTH,
+    maxWidth: MAX_WIDTH,
     height: 48,
     justifyContent: 'center',
   },
+  md3DenseContainer: {
+    height: 32,
+  },
   row: {
     flexDirection: 'row',
-  },
-  icon: {
-    width: iconWidth,
   },
   title: {
     fontSize: 16,
@@ -165,15 +245,13 @@ const styles = StyleSheet.create({
   },
   content: {
     justifyContent: 'center',
-    minWidth: minWidth - 16,
-    maxWidth: maxWidth - 16,
   },
-  widthWithIcon: {
-    maxWidth: maxWidth - (iconWidth + 48),
+  md3LeadingIcon: {
+    marginLeft: 12,
+  },
+  md3WithoutLeadingIcon: {
+    marginLeft: 4,
   },
 });
 
-export default withTheme(MenuItem);
-
-// @component-docs ignore-next-line
-export { MenuItem };
+export default MenuItem;

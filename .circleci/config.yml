@@ -3,7 +3,7 @@ version: 2.1
 executors:
   default:
     docker:
-      - image: circleci/node:10
+      - image: cimg/node:18.20.2
     working_directory: ~/react-native-paper
 
 commands:
@@ -29,24 +29,25 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            yarn install --cwd example --frozen-lockfile
-            yarn install --cwd docs --frozen-lockfile
-            yarn install --frozen-lockfile
+            sudo corepack enable
+            yarn --cwd example --immutable
+            yarn --cwd docs --immutable
+            yarn --immutable
       - save_cache:
           key: dependencies-{{ checksum "package.json" }}
-          paths: 
+          paths:
             - node_modules
       - save_cache:
           key: dependencies-docs-{{ checksum "docs/package.json" }}
-          paths: 
+          paths:
             - docs/node_modules
       - save_cache:
           key: dependencies-example-{{ checksum "example/package.json" }}
-          paths: 
+          paths:
             - example/node_modules
       - persist_to_workspace:
           root: .
-          paths: 
+          paths:
             - .
   lint:
     executor: default
@@ -55,7 +56,7 @@ jobs:
       - run:
           name: Lint files
           command: |
-            yarn lint
+            yarn lint-no-fix
 
   typescript:
     executor: default
@@ -83,7 +84,7 @@ jobs:
           path: coverage
           destination: coverage
       - save_cache:
-          paths: 
+          paths:
             - ./cache/jest
           key: jest-cache-{{ .Branch }}
 
@@ -94,7 +95,8 @@ jobs:
       - run:
           name: Build package
           command: |
-            yarn prepare
+            yarn prepack
+            node ./scripts/typescript-output-lint
 
   build-docs:
     executor: default
@@ -103,10 +105,11 @@ jobs:
       - run:
           name: Build docs
           command: |
+            export DOCUSAURUS_BASE_URL="/output/job/$CIRCLE_WORKFLOW_JOB_ID/artifacts/$CIRCLE_NODE_INDEX/docs/"
             cd docs && yarn build && cd ..
             bash .circleci/comment-artifacts.sh
       - store_artifacts:
-          path: docs/dist
+          path: docs/build
           destination: docs
 
   deploy-docs:
@@ -147,4 +150,5 @@ workflows:
       - deploy-docs:
           filters:
             branches:
-              only: main
+              only:
+                - main

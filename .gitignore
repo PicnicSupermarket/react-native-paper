@@ -64,3 +64,8 @@ CHANGELOG.md
 lib/
 
 .expo
+
+# Yarn
+.yarn/*
+
+.cursor/*

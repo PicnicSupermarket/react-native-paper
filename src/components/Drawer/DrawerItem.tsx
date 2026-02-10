@@ -1,12 +1,23 @@
-import color from 'color';
 import * as React from 'react';
-import { View, StyleSheet, StyleProp, ViewStyle } from 'react-native';
-import Text from '../Typography/Text';
+import {
+  ColorValue,
+  GestureResponderEvent,
+  PressableAndroidRippleConfig,
+  StyleProp,
+  StyleSheet,
+  View,
+  ViewStyle,
+} from 'react-native';
+
+import color from 'color';
+
+import { useInternalTheme } from '../../core/theming';
+import type { ThemeProp } from '../../types';
 import Icon, { IconSource } from '../Icon';
 import TouchableRipple from '../TouchableRipple/TouchableRipple';
-import { withTheme } from '../../core/theming';
+import Text from '../Typography/Text';
 
-type Props = React.ComponentPropsWithRef<typeof View> & {
+export type Props = React.ComponentPropsWithRef<typeof View> & {
   /**
    * The label text of the item.
    */
@@ -20,28 +31,43 @@ type Props = React.ComponentPropsWithRef<typeof View> & {
    */
   active?: boolean;
   /**
+   * Whether the item is disabled.
+   */
+  disabled?: boolean;
+  /**
    * Function to execute on press.
    */
-  onPress?: () => void;
+  onPress?: (e: GestureResponderEvent) => void;
+  /**
+   * Type of background drawabale to display the feedback (Android).
+   * https://reactnative.dev/docs/pressable#rippleconfig
+   */
+  background?: PressableAndroidRippleConfig;
   /**
    * Accessibility label for the button. This is read by the screen reader when the user taps the button.
    */
   accessibilityLabel?: string;
+  /**
+   * Callback which returns a React element to display on the right side. For instance a Badge.
+   */
+  right?: (props: { color: string }) => React.ReactNode;
+  /**
+   * Specifies the largest possible scale a label font can reach.
+   */
+  labelMaxFontSizeMultiplier?: number;
+  /**
+   * Color of the ripple effect.
+   */
+  rippleColor?: ColorValue;
   style?: StyleProp<ViewStyle>;
   /**
    * @optional
    */
-  theme: ReactNativePaper.Theme;
+  theme?: ThemeProp;
 };
 
 /**
  * A component used to show an action item with an icon and a label in a navigation drawer.
- *
- * <div class="screenshots">
- *   <figure>
- *     <img class="medium" src="screenshots/drawer-item.png" />
- *   </figure>
- * </div>
  *
  * ## Usage
  * ```js
@@ -63,59 +89,83 @@ const DrawerItem = ({
   icon,
   label,
   active,
-  theme,
+  disabled,
+  theme: themeOverrides,
+  rippleColor: customRippleColor,
   style,
   onPress,
+  background,
   accessibilityLabel,
+  right,
+  labelMaxFontSizeMultiplier,
   ...rest
 }: Props) => {
-  const { colors, roundness } = theme;
+  const theme = useInternalTheme(themeOverrides);
+  const { roundness, isV3 } = theme;
+
   const backgroundColor = active
-    ? color(colors.primary).alpha(0.12).rgb().string()
-    : 'transparent';
+    ? isV3
+      ? theme.colors.secondaryContainer
+      : color(theme.colors.primary).alpha(0.12).rgb().string()
+    : undefined;
   const contentColor = active
-    ? colors.primary
-    : color(colors.text).alpha(0.68).rgb().string();
-  const font = theme.fonts.medium;
-  const labelMargin = icon ? 32 : 0;
+    ? isV3
+      ? theme.colors.onSecondaryContainer
+      : theme.colors.primary
+    : isV3
+    ? theme.colors.onSurfaceVariant
+    : color(theme.colors.text).alpha(0.68).rgb().string();
+
+  const labelMargin = icon ? (isV3 ? 12 : 32) : 0;
+  const borderRadius = (isV3 ? 7 : 1) * roundness;
+  const rippleColor = isV3
+    ? color(contentColor).alpha(0.12).rgb().string()
+    : undefined;
+  const font = isV3 ? theme.fonts.labelLarge : theme.fonts.medium;
 
   return (
-    <View
-      {...rest}
-      style={[
-        styles.container,
-        { backgroundColor, borderRadius: roundness },
-        style,
-      ]}
-    >
+    <View {...rest}>
       <TouchableRipple
         borderless
-        delayPressIn={0}
+        disabled={disabled}
+        background={background}
         onPress={onPress}
-        style={{ borderRadius: roundness }}
-        // @ts-expect-error We keep old a11y props for backwards compat with old RN versions
-        accessibilityTraits={active ? ['button', 'selected'] : 'button'}
-        accessibilityComponentType="button"
+        style={[
+          styles.container,
+          { backgroundColor, borderRadius },
+          isV3 && styles.v3Container,
+          style,
+        ]}
         accessibilityRole="button"
         accessibilityState={{ selected: active }}
         accessibilityLabel={accessibilityLabel}
+        rippleColor={customRippleColor || rippleColor}
+        theme={theme}
       >
-        <View style={styles.wrapper}>
-          {icon ? <Icon source={icon} size={24} color={contentColor} /> : null}
-          <Text
-            selectable={false}
-            numberOfLines={1}
-            style={[
-              styles.label,
-              {
-                color: contentColor,
-                ...font,
-                marginLeft: labelMargin,
-              },
-            ]}
-          >
-            {label}
-          </Text>
+        <View style={[styles.wrapper, isV3 && styles.v3Wrapper]}>
+          <View style={styles.content}>
+            {icon ? (
+              <Icon source={icon} size={24} color={contentColor} />
+            ) : null}
+            <Text
+              variant="labelLarge"
+              selectable={false}
+              numberOfLines={1}
+              style={[
+                styles.label,
+                {
+                  color: contentColor,
+                  marginLeft: labelMargin,
+                  ...font,
+                },
+              ]}
+              maxFontSizeMultiplier={labelMaxFontSizeMultiplier}
+            >
+              {label}
+            </Text>
+          </View>
+
+          {right?.({ color: contentColor })}
         </View>
       </TouchableRipple>
     </View>
@@ -129,14 +179,31 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
     marginVertical: 4,
   },
+  v3Container: {
+    justifyContent: 'center',
+    height: 56,
+    marginLeft: 12,
+    marginRight: 12,
+    marginVertical: 0,
+  },
   wrapper: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 8,
+  },
+  v3Wrapper: {
+    marginLeft: 16,
+    marginRight: 24,
+    padding: 0,
+  },
+  content: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   label: {
     marginRight: 32,
   },
 });
 
-export default withTheme(DrawerItem);
+export default DrawerItem;
